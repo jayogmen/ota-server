@@ -41,12 +41,19 @@ public class OTAController {
             Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
             artifactInfo.setMetadata(metadata);
 
+            @SuppressWarnings("unchecked")
+            Map<String, Object> esp32Metadata = (Map<String, Object>) data.get("esp32_metadata");
+            if (esp32Metadata != null) {
+                artifactInfo.setEsp32Metadata(esp32Metadata);
+            }
+
             UpdateData updateData = new UpdateData();
             updateData.setLatestSHA((String) data.get("latestSHA"));
             updateData.setArtifactUrl((String) data.get("artifactUrl"));
             updateData.setUpdateType((String) data.get("updateType"));
             updateData.setMetadata(metadata);
             updateData.setVersion((String) data.get("latestSHA"));
+            updateData.setEsp32Metadata(esp32Metadata);
             artifactInfo.setData(updateData);
 
             otaService.saveArtifact(artifactInfo);

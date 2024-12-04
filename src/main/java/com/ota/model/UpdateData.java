@@ -9,14 +9,10 @@ public class UpdateData {
     private String artifactUrl;
     private String updateType;
     private Map<String, Object> metadata;
+    private Map<String, Object> esp32_metadata;
     private String version;
 
-    // Adding explicit setters in addition to @Data annotation to ensure compatibility
-    public void setMetadata(Map<String, Object> metadata) {
-        this.metadata = metadata;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
+    public void setEsp32Metadata(Map<String, Object> esp32_metadata) {
+        this.esp32_metadata = esp32_metadata;
     }
 }

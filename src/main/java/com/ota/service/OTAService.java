@@ -346,4 +346,25 @@ public class OTAService {
             return null;
         }
     }
+
+    private void validateArtifactInfo(ArtifactInfo artifactInfo) {
+        if (artifactInfo.getUpdateType().equals("component-update")) {
+            validateComponentUpdate(artifactInfo);
+        }
+        
+        Map<String, Object> esp32Metadata = artifactInfo.getEsp32Metadata();
+        if (esp32Metadata != null) {
+            validateEsp32Metadata(esp32Metadata);
+        }
+    }
+
+    private void validateEsp32Metadata(Map<String, Object> esp32Metadata) {
+        if (!esp32Metadata.containsKey("version") ||
+            !esp32Metadata.containsKey("type") ||
+            !esp32Metadata.containsKey("binaries")) {
+            throw new IllegalArgumentException(
+                "ESP32 metadata must include version, type, and binaries"
+            );
+        }
+    }
 }
