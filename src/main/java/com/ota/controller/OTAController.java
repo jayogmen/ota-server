@@ -18,7 +18,6 @@ public class OTAController {
     @PostMapping("/saveArtifact")
     public ResponseEntity<UpdateResponse> saveArtifact(@RequestBody Map<String, Object> payload) {
         try {
-            // Extract data from payload
             @SuppressWarnings("unchecked")
             Map<String, Object> data = (Map<String, Object>) payload.get("data");
             if (data == null) {
@@ -32,22 +31,36 @@ public class OTAController {
             artifactInfo.setVersion((String) data.get("latestSHA"));
             artifactInfo.setUrl((String) data.get("artifactUrl"));
             artifactInfo.setUpdateType((String) data.get("updateType"));
-            artifactInfo.setProjectName("default-project");
+            artifactInfo.setProjectName((String) data.get("projectName"));
             
             // Set metadata
             @SuppressWarnings("unchecked")
             Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
             artifactInfo.setMetadata(metadata);
             
+            // Set ESP32 metadata if present
+            @SuppressWarnings("unchecked")
+            Map<String, Object> esp32Metadata = (Map<String, Object>) data.get("esp32_metadata");
+            artifactInfo.setEsp32Metadata(esp32Metadata);
+            
+            // Set the complete data object
+            UpdateData updateData = new UpdateData();
+            updateData.setLatestSHA((String) data.get("latestSHA"));
+            updateData.setArtifactUrl((String) data.get("artifactUrl"));
+            updateData.setUpdateType((String) data.get("updateType"));
+            updateData.setMetadata(metadata);
+            updateData.setVersion((String) data.get("latestSHA"));
+            artifactInfo.setData(updateData);
+
             otaService.saveArtifact(artifactInfo);
             
             return ResponseEntity.ok(
                 new UpdateResponse(true, "Artifact saved successfully", 
-                    artifactInfo.getUpdateType(), null)
+                    artifactInfo.getUpdateType(), updateData)
             );
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                new UpdateResponse(false, e.getMessage(), null, null)
+                new UpdateResponse(false, "Error processing request: " + e.getMessage(), null, null)
             );
         }
     }

@@ -136,6 +136,14 @@ public class OTAService {
                 "Component update metadata must include buildTime, gitCommit, branch, workflow, and version"
             );
         }
+        
+        if (artifactInfo.getVersion() == null || artifactInfo.getVersion().trim().isEmpty()) {
+            throw new IllegalArgumentException("Version is required");
+        }
+        
+        if (artifactInfo.getUrl() == null || artifactInfo.getUrl().trim().isEmpty()) {
+            throw new IllegalArgumentException("URL is required");
+        }
     }
 
     private void validateFullImageUpdate(ArtifactInfo artifactInfo) {
