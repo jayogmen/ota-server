@@ -11,6 +11,8 @@ public class UpdateResponse {
     private String message;
     private String updateType;
     private UpdateData data;
+    
+    
 
     public UpdateResponse(boolean status, String message) {
         this.status = status;

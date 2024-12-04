@@ -39,6 +39,8 @@ public class OTAController {
             Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
             artifactInfo.setMetadata(metadata);
             
+            artifactInfo.setEsp32Update((Boolean) data.get("esp32Update"));
+            
             otaService.saveArtifact(artifactInfo);
             
             return ResponseEntity.ok(

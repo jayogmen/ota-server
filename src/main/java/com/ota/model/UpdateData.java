@@ -5,6 +5,7 @@ import java.util.Map;
 
 @Data
 public class UpdateData {
+    private boolean esp32Update;
     private String latestSHA;
     private String artifactUrl;
     private String updateType;
