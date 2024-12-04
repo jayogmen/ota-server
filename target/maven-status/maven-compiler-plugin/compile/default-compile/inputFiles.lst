@@ -1,0 +1,7 @@
+/home/jay/server_ws/ota-server/src/main/java/com/ota/controller/OTAController.java
+/home/jay/server_ws/ota-server/src/main/java/com/ota/model/UpdateData.java
+/home/jay/server_ws/ota-server/src/main/java/com/ota/OTAApplication.java
+/home/jay/server_ws/ota-server/src/main/java/com/ota/model/ArtifactInfo.java
+/home/jay/server_ws/ota-server/src/main/java/com/ota/service/OTAService.java
+/home/jay/server_ws/ota-server/src/main/java/com/ota/model/UpdateResponse.java
+/home/jay/server_ws/ota-server/src/main/java/com/ota/config/ApplicationConfig.java

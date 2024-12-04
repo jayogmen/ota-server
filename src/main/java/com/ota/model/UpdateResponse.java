@@ -18,6 +18,13 @@ public class UpdateResponse {
         this.updateType = null;
         this.data = null;
     }
+
+    public UpdateResponse(boolean status, String message, UpdateData data) {
+        this.status = status;
+        this.message = message;
+        this.updateType = "esp32-update";
+        this.data = data;
+    }
 }
 
 

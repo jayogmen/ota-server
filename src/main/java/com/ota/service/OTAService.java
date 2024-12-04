@@ -136,14 +136,6 @@ public class OTAService {
                 "Component update metadata must include buildTime, gitCommit, branch, workflow, and version"
             );
         }
-        
-        if (artifactInfo.getVersion() == null || artifactInfo.getVersion().trim().isEmpty()) {
-            throw new IllegalArgumentException("Version is required");
-        }
-        
-        if (artifactInfo.getUrl() == null || artifactInfo.getUrl().trim().isEmpty()) {
-            throw new IllegalArgumentException("URL is required");
-        }
     }
 
     private void validateFullImageUpdate(ArtifactInfo artifactInfo) {
@@ -347,14 +339,34 @@ public class OTAService {
         }
     }
 
+    public Optional<ArtifactInfo> getLatestEsp32Update(String projectName) {
+        try {
+            Map<String, List<ArtifactInfo>> artifacts = loadArtifacts();
+            List<ArtifactInfo> projectArtifacts = artifacts.get(projectName);
+            
+            if (projectArtifacts != null) {
+                return projectArtifacts.stream()
+                    .filter(a -> a.getEsp32Metadata() != null)
+                    .max(Comparator.comparing(ArtifactInfo::getTimestamp));
+            }
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error("Error getting latest ESP32 update", e);
+            return Optional.empty();
+        }
+    }
+
     private void validateArtifactInfo(ArtifactInfo artifactInfo) {
+        // Keep existing validation
         if (artifactInfo.getUpdateType().equals("component-update")) {
             validateComponentUpdate(artifactInfo);
+        } else if (artifactInfo.getUpdateType().equals("full-image-update")) {
+            validateFullImageUpdate(artifactInfo);
         }
         
-        Map<String, Object> esp32Metadata = artifactInfo.getEsp32Metadata();
-        if (esp32Metadata != null) {
-            validateEsp32Metadata(esp32Metadata);
+        // Add ESP32 validation if metadata present
+        if (artifactInfo.getEsp32Metadata() != null) {
+            validateEsp32Metadata(artifactInfo.getEsp32Metadata());
         }
     }
 
@@ -365,6 +377,45 @@ public class OTAService {
             throw new IllegalArgumentException(
                 "ESP32 metadata must include version, type, and binaries"
             );
+        }
+    }
+
+    public void saveEsp32Artifact(ArtifactInfo artifactInfo) {
+        validateEsp32Metadata(artifactInfo.getEsp32Metadata());
+        
+        try {
+            // Save ESP32 metadata and binaries
+            String esp32Dir = "/opt/ota-server/esp32-firmware/" + artifactInfo.getProjectName();
+            Files.createDirectories(Paths.get(esp32Dir));
+            
+            // Save metadata
+            String metadataFile = esp32Dir + "/metadata_" + artifactInfo.getVersion() + ".json";
+            objectMapper.writeValue(new File(metadataFile), artifactInfo);
+            
+            // Update artifacts.json with ESP32 info
+            updateArtifactsJson(artifactInfo);
+            
+            log.info("ESP32 artifact saved successfully: {}", artifactInfo);
+        } catch (Exception e) {
+            log.error("Failed to save ESP32 artifact", e);
+            throw new RuntimeException("Failed to save ESP32 artifact", e);
+        }
+    }
+
+    private void updateArtifactsJson(ArtifactInfo artifactInfo) {
+        try {
+            Map<String, List<ArtifactInfo>> artifacts = loadArtifacts();
+            String projectKey = artifactInfo.getProjectName();
+            
+            List<ArtifactInfo> projectArtifacts = artifacts.computeIfAbsent(
+                projectKey, k -> new ArrayList<>()
+            );
+            projectArtifacts.add(artifactInfo);
+            
+            objectMapper.writeValue(new File(ARTIFACTS_FILE), artifacts);
+        } catch (Exception e) {
+            log.error("Failed to update artifacts.json", e);
+            throw new RuntimeException("Failed to update artifacts.json", e);
         }
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -150,5 +151,74 @@ public class OTAController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(status);
+    }
+
+    @GetMapping("/checkForUpdate/{deviceId}/{projectName}/esp32/{updateType}")
+    public ResponseEntity<UpdateResponse> checkForEsp32Update(
+        @PathVariable String deviceId,
+        @PathVariable String projectName,
+        @PathVariable String updateType) {
+        
+        try {
+            Optional<ArtifactInfo> latestEsp32Update = otaService.getLatestEsp32Update(projectName);
+            if (latestEsp32Update.isPresent()) {
+                UpdateData updateData = new UpdateData();
+                updateData.setEsp32Metadata(latestEsp32Update.get().getEsp32Metadata());
+                return ResponseEntity.ok(
+                    new UpdateResponse(true, "ESP32 update available", "esp32-update", updateData)
+                );
+            }
+            return ResponseEntity.ok(
+                new UpdateResponse(false, "No ESP32 updates available", null, null)
+            );
+        } catch (Exception e) {
+            log.error("Error checking for ESP32 update", e);
+            return ResponseEntity.badRequest().body(
+                new UpdateResponse(false, "Error checking for update: " + e.getMessage(), null, null)
+            );
+        }
+    }
+
+    @PostMapping("/saveEsp32Artifact")
+    public ResponseEntity<UpdateResponse> saveEsp32Artifact(@RequestBody Map<String, Object> payload) {
+        try {
+            log.debug("Received ESP32 payload: {}", payload);
+            
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = (Map<String, Object>) payload.get("data");
+            if (data == null) {
+                return ResponseEntity.badRequest().body(
+                    new UpdateResponse(false, "Missing data object", null, null)
+                );
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> esp32Metadata = (Map<String, Object>) data.get("esp32_metadata");
+            if (esp32Metadata == null) {
+                return ResponseEntity.badRequest().body(
+                    new UpdateResponse(false, "Missing ESP32 metadata", null, null)
+                );
+            }
+
+            ArtifactInfo artifactInfo = new ArtifactInfo();
+            artifactInfo.setProjectName((String) data.get("projectName"));
+            artifactInfo.setVersion((String) esp32Metadata.get("version"));
+            artifactInfo.setUpdateType("esp32-update");
+            artifactInfo.setEsp32Metadata(esp32Metadata);
+
+            otaService.saveEsp32Artifact(artifactInfo);
+            
+            UpdateData updateData = new UpdateData();
+            updateData.setEsp32Metadata(esp32Metadata);
+            
+            return ResponseEntity.ok(
+                new UpdateResponse(true, "ESP32 artifact saved successfully", "esp32-update", updateData)
+            );
+        } catch (Exception e) {
+            log.error("Error processing ESP32 request", e);
+            return ResponseEntity.badRequest().body(
+                new UpdateResponse(false, "Error processing request: " + e.getMessage(), null, null)
+            );
+        }
     }
 }

@@ -1,0 +1,7 @@
+com/ota/model/ArtifactInfo.class
+com/ota/controller/OTAController.class
+com/ota/model/UpdateResponse.class
+com/ota/model/UpdateData.class
+com/ota/service/OTAService.class
+com/ota/OTAApplication.class
+com/ota/config/ApplicationConfig.class
