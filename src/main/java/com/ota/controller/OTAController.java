@@ -3,12 +3,15 @@ package com.ota.controller;
 
 import com.ota.model.ArtifactInfo;
 import com.ota.model.UpdateResponse;
+import com.ota.model.UpdateData;
 import com.ota.service.OTAService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -18,6 +21,8 @@ public class OTAController {
     @PostMapping("/saveArtifact")
     public ResponseEntity<UpdateResponse> saveArtifact(@RequestBody Map<String, Object> payload) {
         try {
+            log.debug("Received payload: {}", payload);
+            
             @SuppressWarnings("unchecked")
             Map<String, Object> data = (Map<String, Object>) payload.get("data");
             if (data == null) {
@@ -26,24 +31,16 @@ public class OTAController {
                 );
             }
 
-            // Create ArtifactInfo from payload
             ArtifactInfo artifactInfo = new ArtifactInfo();
             artifactInfo.setVersion((String) data.get("latestSHA"));
             artifactInfo.setUrl((String) data.get("artifactUrl"));
             artifactInfo.setUpdateType((String) data.get("updateType"));
             artifactInfo.setProjectName((String) data.get("projectName"));
             
-            // Set metadata
             @SuppressWarnings("unchecked")
             Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
             artifactInfo.setMetadata(metadata);
-            
-            // Set ESP32 metadata if present
-            @SuppressWarnings("unchecked")
-            Map<String, Object> esp32Metadata = (Map<String, Object>) data.get("esp32_metadata");
-            artifactInfo.setEsp32Metadata(esp32Metadata);
-            
-            // Set the complete data object
+
             UpdateData updateData = new UpdateData();
             updateData.setLatestSHA((String) data.get("latestSHA"));
             updateData.setArtifactUrl((String) data.get("artifactUrl"));
@@ -59,6 +56,7 @@ public class OTAController {
                     artifactInfo.getUpdateType(), updateData)
             );
         } catch (Exception e) {
+            log.error("Error processing request", e);
             return ResponseEntity.badRequest().body(
                 new UpdateResponse(false, "Error processing request: " + e.getMessage(), null, null)
             );
