@@ -108,7 +108,7 @@ public class OTAService {
                 updateData.setUpdateType(latest.getUpdateType());
                 updateData.setMetadata(latest.getMetadata());
                 updateData.setVersion(latest.getVersion());
-                updateData.setEsp32Update(true);
+                updateData.setEsp32Update(latest.getEsp32Update());
                 
                 return new UpdateResponse(true, "Update available", latest.getUpdateType(), updateData);
             } else {

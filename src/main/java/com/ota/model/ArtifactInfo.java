@@ -16,7 +16,7 @@ public class ArtifactInfo {
     private LocalDateTime timestamp;
     private Map<String, Object> metadata;
     private UpdateData data;
-    private boolean esp32Update;
+    private String esp32Update;
 
     public String getProjectName() { return projectName; }
     public String getVersion() { return version; }
@@ -31,5 +31,5 @@ public class ArtifactInfo {
     public void setUrl(String url) { this.url = url; }
     public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-    public void setEsp32Update(boolean esp32Update) { this.esp32Update = esp32Update; }
+    public void setEsp32Update(String esp32Update) { this.esp32Update = esp32Update; }
 }
