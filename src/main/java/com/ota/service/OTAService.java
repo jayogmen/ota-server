@@ -48,19 +48,17 @@ public class OTAService {
                 throw new IllegalArgumentException("Invalid version format. Must follow semantic versioning (e.g., 1.2.3)");
             }
             
-            // Transfer metadata from data object if not set directly
-            if (artifactInfo.getMetadata() == null && artifactInfo.getData() != null 
-                && artifactInfo.getData().getMetadata() != null) {
-                artifactInfo.setMetadata(artifactInfo.getData().getMetadata());
-            }
-            
-            if ("component-update".equals(artifactInfo.getUpdateType())) {
-                validateComponentUpdate(artifactInfo);
-                saveComponentUpdate(artifactInfo);
-            } else if ("full-image-update".equals(artifactInfo.getUpdateType())) {
-                saveFullImageUpdate(artifactInfo);
-            } else {
-                throw new IllegalArgumentException("Invalid update type: " + artifactInfo.getUpdateType());
+            switch (artifactInfo.getUpdateType().toLowerCase()) {
+                case "component-update":
+                    validateComponentUpdate(artifactInfo);
+                    saveComponentUpdate(artifactInfo);
+                    break;
+                case "full-image-update":
+                    validateFullImageUpdate(artifactInfo);
+                    saveFullImageUpdate(artifactInfo);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported update type: " + artifactInfo.getUpdateType());
             }
             
             projectArtifacts.add(artifactInfo);
@@ -108,7 +106,6 @@ public class OTAService {
                 updateData.setUpdateType(latest.getUpdateType());
                 updateData.setMetadata(latest.getMetadata());
                 updateData.setVersion(latest.getVersion());
-                updateData.setEsp32Update(latest.getEsp32Update());
                 
                 return new UpdateResponse(true, "Update available", latest.getUpdateType(), updateData);
             } else {

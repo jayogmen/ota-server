@@ -16,38 +16,26 @@ public class OTAController {
     private final OTAService otaService;
     
     @PostMapping("/saveArtifact")
-    public ResponseEntity<UpdateResponse> saveArtifact(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<UpdateResponse> saveArtifact(@RequestBody ArtifactInfo artifactInfo) {
+        if (artifactInfo.getUpdateType() == null || artifactInfo.getUpdateType().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                new UpdateResponse(false, "Update type is required", null, null)
+            );
+        }
+        
+        if (artifactInfo.getProjectName() == null || artifactInfo.getProjectName().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                new UpdateResponse(false, "Project name is required", null, null)
+            );
+        }
+        
         try {
-            // Extract data from payload
-            @SuppressWarnings("unchecked")
-            Map<String, Object> data = (Map<String, Object>) payload.get("data");
-            if (data == null) {
-                return ResponseEntity.badRequest().body(
-                    new UpdateResponse(false, "Missing data object", null, null)
-                );
-            }
-
-            // Create ArtifactInfo from payload
-            ArtifactInfo artifactInfo = new ArtifactInfo();
-            artifactInfo.setVersion((String) data.get("latestSHA"));
-            artifactInfo.setUrl((String) data.get("artifactUrl"));
-            artifactInfo.setUpdateType((String) data.get("updateType"));
-            artifactInfo.setProjectName("default-project");
-            
-            // Set metadata
-            @SuppressWarnings("unchecked")
-            Map<String, Object> metadata = (Map<String, Object>) data.get("metadata");
-            artifactInfo.setMetadata(metadata);
-            
-            artifactInfo.setEsp32Update((String) data.get("esp32Update"));
-            
             otaService.saveArtifact(artifactInfo);
-            
             return ResponseEntity.ok(
                 new UpdateResponse(true, "Artifact saved successfully", 
                     artifactInfo.getUpdateType(), null)
             );
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
                 new UpdateResponse(false, e.getMessage(), null, null)
             );
